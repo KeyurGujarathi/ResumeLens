@@ -1,0 +1,71 @@
+# Environment variables and secrets
+
+.env
+.env.*
+!.env.example
+
+# Python
+
+**pycache**/
+*.py[cod]
+.venv/
+venv/
+
+# Databases
+
+*.db
+*.sqlite
+*.sqlite3
+
+# Python testing and cache
+
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+# Python environments and cache
+backend/.venv/
+backend/__pycache__/
+
+# Local database
+backend/*.db
+
+# Environment secrets
+backend/.env
+frontend/.env
+backend/resumelens.db
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build files
+frontend/dist/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Database
+*.db
