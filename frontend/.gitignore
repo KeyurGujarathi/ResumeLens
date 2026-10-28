@@ -69,3 +69,14 @@ venv/
 
 # Database
 *.db
+
+node_modules/
+dist/
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+.env
+.env.*
+!.env.example
+*.db
