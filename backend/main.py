@@ -43,6 +43,8 @@ app = FastAPI()
 
 app.include_router(auth_router)
 app.include_router(data_admin_router)
+
+
 # ---------------------------------------------------------
 # CORS
 # ---------------------------------------------------------
@@ -52,17 +54,17 @@ _configured_origins = [
     for origin in os.getenv("RESUMELENS_ALLOWED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+
 _local_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5174",
 ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_local_origins + _configured_origins,
-    # Allows a phone on the same private Wi-Fi to use Vite's dev server.
-    # Production origins should be explicitly configured with RESUMELENS_ALLOWED_ORIGINS.
     allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}|172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3})(:\d+)?$",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -81,6 +83,8 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
 @app.get("/api/debug/database")
 def debug_database(db: Session = Depends(get_db)):
     return {
@@ -118,7 +122,6 @@ PASSION_KEYWORDS = {
         "java": 3,
         "developer": 3,
     },
-
     "AI / ML / Data": {
         "artificial intelligence": 6,
         "machine learning": 6,
@@ -132,7 +135,6 @@ PASSION_KEYWORDS = {
         "prediction": 3,
         "analytics": 3,
     },
-
     "Cloud / DevOps": {
         "cloud": 5,
         "aws": 6,
@@ -145,7 +147,6 @@ PASSION_KEYWORDS = {
         "server": 3,
         "infrastructure": 4,
     },
-
     "Embedded / IoT / Robotics": {
         "robot": 7,
         "robots": 7,
@@ -169,7 +170,6 @@ PASSION_KEYWORDS = {
         "actuator": 5,
         "raspberry pi": 7,
     },
-
     "Electronics / Hardware": {
         "electronics": 7,
         "electronic": 7,
@@ -185,7 +185,6 @@ PASSION_KEYWORDS = {
         "wiring": 4,
         "oscilloscope": 6,
     },
-
     "VLSI / Semiconductor": {
         "vlsi": 8,
         "semiconductor": 7,
@@ -199,7 +198,6 @@ PASSION_KEYWORDS = {
         "ic design": 8,
         "chip": 5,
     },
-
     "Electrical / Core": {
         "electrical engineering": 7,
         "power systems": 7,
@@ -210,7 +208,6 @@ PASSION_KEYWORDS = {
         "transformer": 6,
         "control engineering": 6,
     },
-
     "Mechanical / Core": {
         "mechanical engineering": 8,
         "mechanical": 6,
@@ -226,7 +223,6 @@ PASSION_KEYWORDS = {
         "fluid mechanics": 6,
         "designing machines": 7,
     },
-
     "Civil / Core": {
         "civil engineering": 8,
         "construction": 7,
@@ -272,7 +268,6 @@ CAREER_DOMAIN_SKILLS = {
         ("System Design", "Practices"),
         ("Unit Testing", "Practices"),
     ],
-
     "AI / ML / Data": [
         ("Python", "Programming"),
         ("Machine Learning", "Data/ML"),
@@ -291,7 +286,6 @@ CAREER_DOMAIN_SKILLS = {
         ("Tableau", "Data/ML"),
         ("Power BI", "Data/ML"),
     ],
-
     "Cloud / DevOps": [
         ("Python", "Programming"),
         ("AWS", "Cloud/DevOps"),
@@ -305,7 +299,6 @@ CAREER_DOMAIN_SKILLS = {
         ("Git", "Cloud/DevOps"),
         ("Microservices", "Backend"),
     ],
-
     "Embedded / IoT / Robotics": [
         ("C", "Programming"),
         ("C++", "Programming"),
@@ -327,7 +320,6 @@ CAREER_DOMAIN_SKILLS = {
         ("Microprocessors & Microcontrollers", "Embedded"),
         ("Git", "Practices"),
     ],
-
     "Electronics / Hardware": [
         ("C", "Programming"),
         ("C++", "Programming"),
@@ -349,7 +341,6 @@ CAREER_DOMAIN_SKILLS = {
         ("Signals & Systems", "Electronics"),
         ("Communication", "Electronics"),
     ],
-
     "VLSI / Semiconductor": [
         ("C", "Programming"),
         ("C++", "Programming"),
@@ -366,7 +357,6 @@ CAREER_DOMAIN_SKILLS = {
         ("Linux", "Cloud/DevOps"),
         ("Git", "Practices"),
     ],
-
     "Electrical / Core": [
         ("C", "Programming"),
         ("C++", "Programming"),
@@ -380,7 +370,6 @@ CAREER_DOMAIN_SKILLS = {
         ("Sensors", "Electrical"),
         ("Microcontrollers", "Embedded"),
     ],
-
     "Mechanical / Core": [
         ("SolidWorks", "Mechanical"),
         ("CATIA", "Mechanical"),
@@ -394,7 +383,6 @@ CAREER_DOMAIN_SKILLS = {
         ("Mechanical Design", "Mechanical"),
         ("Machine Design", "Mechanical"),
     ],
-
     "Civil / Core": [
         ("AutoCAD", "Civil"),
         ("STAAD Pro", "Civil"),
@@ -406,7 +394,6 @@ CAREER_DOMAIN_SKILLS = {
         ("Geotechnical Engineering", "Civil"),
         ("Concrete Technology", "Civil"),
     ],
-
     "Other": [],
 }
 
@@ -416,53 +403,44 @@ CAREER_DOMAIN_SKILLS = {
 # ---------------------------------------------------------
 
 CAREER_INTEREST_DOMAIN = {
-    # Software
     "Software / IT": "Software / IT",
     "Software Development": "Software / IT",
     "Web Development": "Software / IT",
 
-    # AI / ML
     "AI / ML / Data": "AI / ML / Data",
     "AI / Machine Learning": "AI / ML / Data",
     "Data Science": "AI / ML / Data",
 
-    # Cloud
     "Cloud / DevOps": "Cloud / DevOps",
 
-    # Embedded
     "Embedded / IoT / Robotics": "Embedded / IoT / Robotics",
     "Embedded Systems": "Embedded / IoT / Robotics",
     "IoT": "Embedded / IoT / Robotics",
     "Robotics": "Embedded / IoT / Robotics",
 
-    # Electronics
     "Electronics / Hardware": "Electronics / Hardware",
     "Electronics": "Electronics / Hardware",
     "Hardware": "Electronics / Hardware",
 
-    # VLSI
     "VLSI / Semiconductor": "VLSI / Semiconductor",
     "VLSI": "VLSI / Semiconductor",
     "Semiconductor": "VLSI / Semiconductor",
 
-    # Electrical
     "Electrical / Core": "Electrical / Core",
     "Electrical": "Electrical / Core",
 
-    # Mechanical
     "Mechanical / Core": "Mechanical / Core",
     "Mechanical Design": "Mechanical / Core",
     "Manufacturing": "Mechanical / Core",
     "Automotive": "Mechanical / Core",
 
-    # Civil
     "Civil / Core": "Civil / Core",
     "Construction / Structural": "Civil / Core",
     "Structural Design": "Civil / Core",
 
-    # Other
     "Other": "Other",
 }
+
 
 # ---------------------------------------------------------
 # PASSION DOMAIN DETECTION
@@ -530,14 +508,12 @@ def get_domain_fallback_skills(
     seen_skills = set()
 
     for domain in domains:
-
         domain_skills = CAREER_DOMAIN_SKILLS.get(
             domain,
             [],
         )
 
         for skill_name, category in domain_skills:
-
             skill_key = skill_name.lower()
 
             if skill_key in seen_skills:
@@ -545,9 +521,7 @@ def get_domain_fallback_skills(
 
             seen_skills.add(skill_key)
 
-            has_skill = (
-                skill_key in resume_skills_normalized
-            )
+            has_skill = skill_key in resume_skills_normalized
 
             market_skills.append(
                 {
@@ -584,7 +558,6 @@ def read_root():
 def get_skill_counts(
     db: Session = Depends(get_db),
 ):
-
     rows = (
         db.query(
             models.Skill.name,
@@ -595,8 +568,7 @@ def get_skill_counts(
         )
         .join(
             models.JobPostingSkill,
-            models.JobPostingSkill.skill_id
-            == models.Skill.id,
+            models.JobPostingSkill.skill_id == models.Skill.id,
         )
         .group_by(models.Skill.id)
         .order_by(
@@ -629,10 +601,7 @@ def get_skill_trends(
     skill: str | None = None,
     db: Session = Depends(get_db),
 ):
-
-    total_postings = (
-        db.query(models.JobPosting).count()
-    )
+    total_postings = db.query(models.JobPosting).count()
 
     dated_postings = (
         db.query(models.JobPosting)
@@ -642,11 +611,8 @@ def get_skill_trends(
         .count()
     )
 
-    undated_postings = (
-        total_postings - dated_postings
-    )
+    undated_postings = total_postings - dated_postings
 
-    # Support both PostgreSQL and SQLite
     database_type = db.get_bind().dialect.name
 
     if database_type == "postgresql":
@@ -670,13 +636,11 @@ def get_skill_trends(
         )
         .join(
             models.JobPostingSkill,
-            models.JobPostingSkill.skill_id
-            == models.Skill.id,
+            models.JobPostingSkill.skill_id == models.Skill.id,
         )
         .join(
             models.JobPosting,
-            models.JobPosting.id
-            == models.JobPostingSkill.posting_id,
+            models.JobPosting.id == models.JobPostingSkill.posting_id,
         )
         .filter(
             models.JobPosting.first_published_at.isnot(None)
@@ -685,8 +649,7 @@ def get_skill_trends(
 
     if skill:
         query = query.filter(
-            func.lower(models.Skill.name)
-            == skill.lower()
+            func.lower(models.Skill.name) == skill.lower()
         )
 
     rows = (
@@ -718,6 +681,8 @@ def get_skill_trends(
         undated_postings=undated_postings,
         points=points,
     )
+
+
 # ---------------------------------------------------------
 # SKILL RANKINGS
 # ---------------------------------------------------------
@@ -726,7 +691,6 @@ def get_skill_trends(
 def get_skill_rankings(
     db: Session = Depends(get_db),
 ):
-
     rows = (
         db.query(
             models.Skill.name,
@@ -736,13 +700,11 @@ def get_skill_rankings(
         )
         .join(
             models.JobPostingSkill,
-            models.JobPostingSkill.skill_id
-            == models.Skill.id,
+            models.JobPostingSkill.skill_id == models.Skill.id,
         )
         .join(
             models.JobPosting,
-            models.JobPosting.id
-            == models.JobPostingSkill.posting_id,
+            models.JobPosting.id == models.JobPostingSkill.posting_id,
         )
         .group_by(models.Skill.id)
         .order_by(
@@ -760,6 +722,8 @@ def get_skill_rankings(
         }
         for name, count in rows
     ]
+
+
 # ---------------------------------------------------------
 # COMPANY LIST
 # ---------------------------------------------------------
@@ -768,7 +732,6 @@ def get_skill_rankings(
 def get_companies(
     db: Session = Depends(get_db),
 ):
-
     rows = (
         db.query(
             models.Company.name,
@@ -778,17 +741,10 @@ def get_companies(
         )
         .outerjoin(
             models.JobPosting,
-            models.JobPosting.company_id
-            == models.Company.id,
+            models.JobPosting.company_id == models.Company.id,
         )
-        .group_by(
-            models.Company.id
-        )
-        .order_by(
-            func.lower(
-                models.Company.name
-            )
-        )
+        .group_by(models.Company.id)
+        .order_by(func.lower(models.Company.name))
         .all()
     )
 
@@ -800,22 +756,16 @@ def get_companies(
         for name, posting_count in rows
     ]
 
+
 # ---------------------------------------------------------
 # CAREER PROFILE
 # ---------------------------------------------------------
 
 @app.post("/api/career-profile")
 async def save_career_profile(request: dict):
-
     branch = request.get("branch", "")
-    career_interests = request.get(
-        "career_interests",
-        [],
-    )
-    passion = request.get(
-        "passion",
-        "",
-    )
+    career_interests = request.get("career_interests", [])
+    passion = request.get("passion", "")
 
     if not branch:
         raise HTTPException(
@@ -829,14 +779,11 @@ async def save_career_profile(request: dict):
             detail="career_interests must be a list.",
         )
 
-    detected_domains = detect_passion_domains(
-        passion
-    )
+    detected_domains = detect_passion_domains(passion)
 
     combined_interests = []
 
     for interest in career_interests:
-
         if interest not in combined_interests:
             combined_interests.append(interest)
 
@@ -859,48 +806,22 @@ def calculate_skill_gap(
     request: dict,
     db: Session = Depends(get_db),
 ):
-
-    resume_skills = request.get(
-        "skills",
-        [],
-    )
-
-    branch = request.get(
-        "branch",
-        "",
-    )
-
-    career_interests = request.get(
-        "career_interests",
-        [],
-    )
-
-    passion = request.get(
-        "passion",
-        "",
-    )
-
-    # -----------------------------------------------------
-    # VALIDATION
-    # -----------------------------------------------------
+    resume_skills = request.get("skills", [])
+    branch = request.get("branch", "")
+    career_interests = request.get("career_interests", [])
+    passion = request.get("passion", "")
 
     if not isinstance(resume_skills, list):
-
         raise HTTPException(
             status_code=400,
             detail="skills must be a list.",
         )
 
     if not isinstance(career_interests, list):
-
         raise HTTPException(
             status_code=400,
             detail="career_interests must be a list.",
         )
-
-    # -----------------------------------------------------
-    # NORMALIZE RESUME SKILLS
-    # -----------------------------------------------------
 
     resume_skills_normalized = {
         str(skill).strip().lower()
@@ -908,36 +829,20 @@ def calculate_skill_gap(
         if str(skill).strip()
     }
 
-    # -----------------------------------------------------
-    # REMOVE DUPLICATE INTERESTS
-    # -----------------------------------------------------
-
     unique_interests = []
 
     for interest in career_interests:
-
         if not isinstance(interest, str):
             continue
 
         cleaned_interest = interest.strip()
 
-        if (
-            cleaned_interest
-            and cleaned_interest
-            not in unique_interests
-        ):
-            unique_interests.append(
-                cleaned_interest
-            )
-
-    # -----------------------------------------------------
-    # BUILD CAREER TRACKS
-    # -----------------------------------------------------
+        if cleaned_interest and cleaned_interest not in unique_interests:
+            unique_interests.append(cleaned_interest)
 
     career_tracks = []
 
     for interest in unique_interests:
-
         internal_domain = CAREER_INTEREST_DOMAIN.get(
             interest,
             "Other",
@@ -948,16 +853,10 @@ def calculate_skill_gap(
             [],
         )
 
-        # -------------------------------------------------
-        # LIMIT TO UNIQUE SKILLS
-        # -------------------------------------------------
-
         unique_domain_skills = []
-
         seen_skills = set()
 
         for skill_name, category in domain_skills:
-
             skill_key = skill_name.lower()
 
             if skill_key in seen_skills:
@@ -966,24 +865,15 @@ def calculate_skill_gap(
             seen_skills.add(skill_key)
 
             unique_domain_skills.append(
-                (
-                    skill_name,
-                    category,
-                )
+                (skill_name, category)
             )
-
-        # -------------------------------------------------
-        # MARKET DATA
-        # -------------------------------------------------
 
         market_counts = {}
 
         if unique_domain_skills:
-
             skill_names = [
                 skill_name
-                for skill_name, category
-                in unique_domain_skills
+                for skill_name, category in unique_domain_skills
             ]
 
             rows = (
@@ -996,12 +886,9 @@ def calculate_skill_gap(
                 )
                 .join(
                     models.JobPostingSkill,
-                    models.JobPostingSkill.skill_id
-                    == models.Skill.id,
+                    models.JobPostingSkill.skill_id == models.Skill.id,
                 )
-                .group_by(
-                    models.Skill.id
-                )
+                .group_by(models.Skill.id)
                 .all()
             )
 
@@ -1010,46 +897,23 @@ def calculate_skill_gap(
                 for name in skill_names
             }
 
-            for (
-                name,
-                category,
-                posting_count,
-            ) in rows:
-
-                if (
-                    name.lower()
-                    in requested_skill_keys
-                ):
-                    market_counts[
-                        name.lower()
-                    ] = {
+            for name, category, posting_count in rows:
+                if name.lower() in requested_skill_keys:
+                    market_counts[name.lower()] = {
                         "name": name,
                         "category": category,
                         "posting_count": posting_count,
                     }
 
-        # -------------------------------------------------
-        # MATCHED / MISSING
-        # -------------------------------------------------
-
         matched_skills = []
         missing_skills = []
 
-        for (
-            skill_name,
-            category,
-        ) in unique_domain_skills:
-
+        for skill_name, category in unique_domain_skills:
             skill_key = skill_name.lower()
 
-            has_skill = (
-                skill_key
-                in resume_skills_normalized
-            )
+            has_skill = skill_key in resume_skills_normalized
 
-            market_data = market_counts.get(
-                skill_key
-            )
+            market_data = market_counts.get(skill_key)
 
             posting_count = (
                 market_data["posting_count"]
@@ -1065,102 +929,51 @@ def calculate_skill_gap(
             }
 
             if has_skill:
-
-                matched_skills.append(
-                    skill_item
-                )
-
+                matched_skills.append(skill_item)
             else:
-
-                missing_skills.append(
-                    skill_item
-                )
-
-        # -------------------------------------------------
-        # SORT MISSING SKILLS
-        # -------------------------------------------------
+                missing_skills.append(skill_item)
 
         missing_skills.sort(
             key=lambda item: (
                 item["posting_count"]
-                if item["posting_count"]
-                is not None
+                if item["posting_count"] is not None
                 else -1
             ),
             reverse=True,
         )
 
-        # -------------------------------------------------
-        # MATCH PERCENTAGE
-        # -------------------------------------------------
-
-        relevant_skill_count = len(
-            unique_domain_skills
-        )
-
-        matched_count = len(
-            matched_skills
-        )
-
-        missing_count = len(
-            missing_skills
-        )
+        relevant_skill_count = len(unique_domain_skills)
+        matched_count = len(matched_skills)
+        missing_count = len(missing_skills)
 
         if relevant_skill_count > 0:
-
             match_percentage = round(
-                (
-                    matched_count
-                    / relevant_skill_count
-                )
-                * 100
+                (matched_count / relevant_skill_count) * 100
             )
-
         else:
-
             match_percentage = 0
-
-        # -------------------------------------------------
-        # CAREER TRACK
-        # -------------------------------------------------
 
         career_tracks.append(
             {
                 "career": interest,
                 "internal_domain": internal_domain,
-                "relevant_skill_count": (
-                    relevant_skill_count
-                ),
+                "relevant_skill_count": relevant_skill_count,
                 "matched_count": matched_count,
                 "missing_count": missing_count,
-                "match_percentage": (
-                    match_percentage
-                ),
+                "match_percentage": match_percentage,
                 "matched_skills": matched_skills,
                 "missing_skills": missing_skills,
             }
         )
 
-    # -----------------------------------------------------
-    # PASSION INFORMATION
-    # -----------------------------------------------------
-
-    detected_domains = detect_passion_domains(
-        passion
-    )
-
-    # -----------------------------------------------------
-    # RESPONSE
-    # -----------------------------------------------------
+    detected_domains = detect_passion_domains(passion)
 
     return {
         "branch": branch,
         "career_interests": unique_interests,
         "passion": passion,
         "detected_career_domains": detected_domains,
-        "resume_skill_count": len(
-            resume_skills_normalized
-        ),
+        "resume_skill_count": len(resume_skills_normalized),
         "analysis_mode": "career_profile",
         "skill_source": "provided_resume_skills",
         "career_tracks": career_tracks,
@@ -1178,10 +991,7 @@ def calculate_skill_gap(
 def analyze_resume_bullet(
     request: BulletRequest,
 ):
-
-    findings = analyze_bullet(
-        request.bullet
-    )
+    findings = analyze_bullet(request.bullet)
 
     return BulletAnalysis(
         bullet=request.bullet,
@@ -1201,12 +1011,10 @@ def get_company_fit(
     request: CompanyFitRequest,
     db: Session = Depends(get_db),
 ):
-    # FIND COMPANY
     company = (
         db.query(models.Company)
         .filter(
-            func.lower(models.Company.name)
-            == request.company.lower()
+            func.lower(models.Company.name) == request.company.lower()
         )
         .first()
     )
@@ -1214,19 +1022,12 @@ def get_company_fit(
     if company is None:
         raise HTTPException(
             status_code=404,
-            detail=(
-                f"Company '{request.company}' "
-                "not found"
-            ),
+            detail=f"Company '{request.company}' not found",
         )
 
-    # TOTAL COMPANY JOB POSTINGS
     total_postings = (
         db.query(models.JobPosting)
-        .filter(
-            models.JobPosting.company_id
-            == company.id
-        )
+        .filter(models.JobPosting.company_id == company.id)
         .count()
     )
 
@@ -1237,7 +1038,6 @@ def get_company_fit(
             skills=[],
         )
 
-    # GET COMPANY SKILL DEMAND
     rows = (
         db.query(
             models.Skill.name,
@@ -1248,18 +1048,13 @@ def get_company_fit(
         )
         .join(
             models.JobPostingSkill,
-            models.JobPostingSkill.skill_id
-            == models.Skill.id,
+            models.JobPostingSkill.skill_id == models.Skill.id,
         )
         .join(
             models.JobPosting,
-            models.JobPosting.id
-            == models.JobPostingSkill.posting_id,
+            models.JobPosting.id == models.JobPostingSkill.posting_id,
         )
-        .filter(
-            models.JobPosting.company_id
-            == company.id
-        )
+        .filter(models.JobPosting.company_id == company.id)
         .group_by(models.Skill.id)
         .order_by(
             func.count(
@@ -1269,15 +1064,12 @@ def get_company_fit(
         .all()
     )
 
-    # USER RESUME SKILLS
     user_skills = {
         skill.strip().lower()
         for skill in request.skills
-        if isinstance(skill, str)
-        and skill.strip()
+        if isinstance(skill, str) and skill.strip()
     }
 
-    # CAREER-AWARE SKILL FILTER
     selected_career_skills = set()
 
     for interest in request.career_interests:
@@ -1292,8 +1084,6 @@ def get_company_fit(
         )
 
         for skill in domain_skills:
-            # Some skill definitions may contain
-            # additional information as tuples.
             if isinstance(skill, (tuple, list)):
                 skill_name = skill[0]
             else:
@@ -1304,19 +1094,16 @@ def get_company_fit(
                     skill_name.strip().lower()
                 )
 
-    # FILTER COMPANY SKILLS
     if selected_career_skills:
         filtered_rows = [
             row
             for row in rows
             if isinstance(row[0], str)
-            and row[0].strip().lower()
-            in selected_career_skills
+            and row[0].strip().lower() in selected_career_skills
         ]
     else:
         filtered_rows = rows
 
-    # BUILD COMPANY FIT RESULT
     skills = []
 
     for name, category, count in filtered_rows:
@@ -1332,21 +1119,11 @@ def get_company_fit(
                 category=category,
                 posting_count=count,
                 percentage=round(
-                    (
-                        count
-                        / total_postings
-                    )
-                    * 100,
+                    (count / total_postings) * 100,
                     2,
                 ),
-                has_skill=(
-                    skill_name_lower
-                    in user_skills
-                ),
-                gap=(
-                    skill_name_lower
-                    not in user_skills
-                ),
+                has_skill=skill_name_lower in user_skills,
+                gap=skill_name_lower not in user_skills,
             )
         )
 
@@ -1355,6 +1132,8 @@ def get_company_fit(
         total_postings=total_postings,
         skills=skills,
     )
+
+
 # ---------------------------------------------------------
 # RESUME ANALYZER
 # ---------------------------------------------------------
@@ -1364,105 +1143,59 @@ async def analyze_resume(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-
     if file.content_type != "application/pdf":
-
         raise HTTPException(
             status_code=400,
-            detail=(
-                "Only PDF files are supported."
-            ),
+            detail="Only PDF files are supported.",
         )
 
     contents = await file.read()
 
-    pdf_file = io.BytesIO(
-        contents
-    )
-
-    reader = PdfReader(
-        pdf_file
-    )
+    pdf_file = io.BytesIO(contents)
+    reader = PdfReader(pdf_file)
 
     extracted_text = ""
 
     for page in reader.pages:
-
-        page_text = (
-            page.extract_text()
-            or ""
-        )
-
-        extracted_text += (
-            page_text + "\n"
-        )
-
-    # ---------------------------------------------------------
-    # DEBUG
-    # ---------------------------------------------------------
+        page_text = page.extract_text() or ""
+        extracted_text += page_text + "\n"
 
     print()
-    print(
-        "=============================================="
-    )
-    print(
-        "EXTRACTED RESUME TEXT"
-    )
-    print(
-        "=============================================="
-    )
-    print(
-        repr(extracted_text)
-    )
-    print(
-        "=============================================="
-    )
+    print("==============================================")
+    print("EXTRACTED RESUME TEXT")
+    print("==============================================")
+    print(repr(extracted_text))
+    print("==============================================")
     print()
 
-    # ---------------------------------------------------------
-    # SKILL DETECTION
-    # ---------------------------------------------------------
-
-    detected_skills = extract_skills(
-        extracted_text
-    )
+    detected_skills = extract_skills(extracted_text)
 
     detected_skills = sorted(
         detected_skills,
         key=str.lower,
     )
 
-    # ---------------------------------------------------------
-    # RESUME SCORE
-    # ---------------------------------------------------------
-
-    resume_score = (
-        calculate_resume_score(
-            extracted_text,
-            detected_skills,
-        )
+    resume_score = calculate_resume_score(
+        extracted_text,
+        detected_skills,
     )
-
-    # ---------------------------------------------------------
-    # RESPONSE
-    # ---------------------------------------------------------
 
     return {
         "filename": file.filename,
         "pages": len(reader.pages),
-        "text_length": len(
-            extracted_text
-        ),
+        "text_length": len(extracted_text),
         "detected_skills": detected_skills,
-        "skill_count": len(
-            detected_skills
-        ),
+        "skill_count": len(detected_skills),
         "full_text": extracted_text,
-        "text_preview": extracted_text[
-            :1000
-        ],
+        "text_preview": extracted_text[:1000],
         "resume_score": resume_score,
     }
+
+
+# ---------------------------------------------------------
+# CAREER ROADMAP
+# ---------------------------------------------------------
+
 @app.post("/api/career-roadmap")
 def get_career_roadmap(
     request: dict,
@@ -1495,42 +1228,30 @@ def get_career_roadmap(
             "iot": "Embedded / IoT / Robotics",
             "motor drivers": "Embedded / IoT / Robotics",
             "raspberry pi": "Embedded / IoT / Robotics",
-            "microprocessors & microcontrollers":
-                "Embedded / IoT / Robotics",
+            "microprocessors & microcontrollers": "Embedded / IoT / Robotics",
             "esp32": "Embedded / IoT / Robotics",
             "esp32-cam": "Embedded / IoT / Robotics",
             "arduino": "Embedded / IoT / Robotics",
-            "8051 microcontroller":
-                "Embedded / IoT / Robotics",
-            "arm architecture":
-                "Embedded / IoT / Robotics",
-            "embedded systems":
-                "Embedded / IoT / Robotics",
+            "8051 microcontroller": "Embedded / IoT / Robotics",
+            "arm architecture": "Embedded / IoT / Robotics",
+            "embedded systems": "Embedded / IoT / Robotics",
 
             "pcb": "Electronics / Hardware",
             "circuit design": "Electronics / Hardware",
-            "analog electronics":
-                "Electronics / Hardware",
-            "digital electronics":
-                "Electronics / Hardware",
+            "analog electronics": "Electronics / Hardware",
+            "digital electronics": "Electronics / Hardware",
             "sensors": "Electronics / Hardware",
             "oscilloscope": "Electronics / Hardware",
             "altium": "Electronics / Hardware",
             "kicad": "Electronics / Hardware",
-            "signals & systems":
-                "Electronics / Hardware",
-            "communication":
-                "Electronics / Hardware",
+            "signals & systems": "Electronics / Hardware",
+            "communication": "Electronics / Hardware",
         }
 
         # ---------------------------------------------------------
         # PRACTICAL LEARNING PRIORITY
-        # ---------------------------------------------------------
-        #
-        # Lower number = recommended earlier.
-        #
-        # This is NOT job-market demand.
-        # It is used only when skills have little/no market data.
+        # Lower number = learn earlier.
+        # Used only when market data is unavailable.
         # ---------------------------------------------------------
 
         LEARNING_PRIORITY = {
@@ -1588,7 +1309,6 @@ def get_career_roadmap(
             )
 
             for skill in domain_skills:
-
                 if isinstance(skill, (tuple, list)):
                     skill_name = skill[0]
                 else:
@@ -1630,15 +1350,13 @@ def get_career_roadmap(
         roadmap = []
 
         for skill_key, skill_info in selected_career_skills.items():
-
             skill_name = skill_info["skill"]
             career_domain = skill_info["career_domain"]
 
             skill_record = (
                 db.query(models.Skill)
                 .filter(
-                    func.lower(models.Skill.name)
-                    == skill_key
+                    func.lower(models.Skill.name) == skill_key
                 )
                 .first()
             )
@@ -1647,21 +1365,22 @@ def get_career_roadmap(
             category = "General"
 
             if skill_record:
-                category = (
-                    skill_record.category
-                    or "General"
-                )
+                category = skill_record.category or "General"
 
                 posting_count = (
-                    db.query(
-                        models.JobPostingSkill
-                    )
+                    db.query(models.JobPostingSkill)
                     .filter(
-                        models.JobPostingSkill.skill_id
-                        == skill_record.id
+                        models.JobPostingSkill.skill_id == skill_record.id
                     )
                     .count()
                 )
+
+            learning_rank = LEARNING_PRIORITY.get(
+                skill_key,
+                999,
+            )
+
+            priority_basis = "Job Market Data"
 
             if posting_count >= 100:
                 priority = "High"
@@ -1686,22 +1405,40 @@ def get_career_roadmap(
                 recommendation = "Consider later"
                 reason = (
                     "Appears in the dataset, "
-                    "but current demand is "
-                    "relatively lower."
+                    "but current demand is relatively lower."
                 )
 
             else:
-                priority = "Limited Data"
-                recommendation = (
-                    "Consider based on career direction"
-                )
-                reason = (
-                    "This skill is relevant to "
-                    "your selected career direction, "
-                    "but the current ResumeLens job "
-                    "dataset has no matching "
-                    "posting data for it."
-                )
+                priority_basis = "Learning Recommendation"
+
+                if learning_rank <= 5:
+                    priority = "Medium"
+                    recommendation = "Recommended for learning"
+                    reason = (
+                        "Recommended based on your selected "
+                        "career direction and practical learning "
+                        "sequence. Market demand data is limited."
+                    )
+
+                elif learning_rank <= 10:
+                    priority = "Low"
+                    recommendation = "Learn after core skills"
+                    reason = (
+                        "Useful for your selected career direction, "
+                        "but should be learned after foundational "
+                        "skills. Market demand data is limited."
+                    )
+
+                else:
+                    priority = "Limited Data"
+                    recommendation = (
+                        "Consider based on career direction"
+                    )
+                    reason = (
+                        "Relevant to your selected career direction, "
+                        "but insufficient matching job-market data "
+                        "is available."
+                    )
 
             roadmap.append(
                 {
@@ -1709,11 +1446,8 @@ def get_career_roadmap(
                     "career_domain": career_domain,
                     "category": category,
                     "posting_count": posting_count,
-                    "learning_priority":
-                        LEARNING_PRIORITY.get(
-                            skill_key,
-                            999,
-                        ),
+                    "learning_priority": learning_rank,
+                    "priority_basis": priority_basis,
                     "priority": priority,
                     "recommendation": recommendation,
                     "reason": reason,
@@ -1721,7 +1455,10 @@ def get_career_roadmap(
             )
 
         roadmap.sort(
-            key=lambda item: item["posting_count"],
+            key=lambda item: (
+                item["posting_count"],
+                -item["learning_priority"],
+            ),
             reverse=True,
         )
 
@@ -1739,7 +1476,5 @@ def get_career_roadmap(
 
         raise HTTPException(
             status_code=500,
-            detail=(
-                f"Career roadmap failed: {str(e)}"
-            ),
+            detail=f"Career roadmap failed: {str(e)}",
         )
