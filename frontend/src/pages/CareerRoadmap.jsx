@@ -264,28 +264,20 @@ function CareerRoadmap() {
     );
 
   const highPriority = allSkills.filter(
-    (item) =>
-      item.priority === "High" &&
-      !isRecommended(item)
-  );
+  (item) => item.priority === "High"
+);
 
-  const mediumPriority = allSkills.filter(
-    (item) =>
-      item.priority === "Medium" &&
-      !isRecommended(item)
-  );
+const mediumPriority = allSkills.filter(
+  (item) => item.priority === "Medium"
+);
 
-  const lowPriority = allSkills.filter(
-    (item) =>
-      item.priority === "Low" &&
-      !isRecommended(item)
-  );
+const lowPriority = allSkills.filter(
+  (item) => item.priority === "Low"
+);
 
-  const limitedData = allSkills.filter(
-    (item) =>
-      item.priority === "Limited Data" &&
-      !isRecommended(item)
-  );
+const limitedData = allSkills.filter(
+  (item) => item.priority === "Limited Data"
+);
 
   const totalSkills = allSkills.length;
 
