@@ -172,9 +172,6 @@ function CareerRoadmap() {
 
   const skillsByDomain = {};
 
-  /*
-    Group all roadmap skills by their career domain.
-  */
   allSkills.forEach((skill) => {
     const domain = skill.career_domain;
 
@@ -189,13 +186,6 @@ function CareerRoadmap() {
     skillsByDomain[domain].push(skill);
   });
 
-  /*
-    Sort each career domain.
-
-    1. Skills with job-market data come first.
-    2. Among skills with data, higher posting count wins.
-    3. Among skills with zero data, practical learning_priority wins.
-  */
   selectedCareerDomains.forEach((domain) => {
     if (!skillsByDomain[domain]) {
       skillsByDomain[domain] = [];
@@ -226,16 +216,6 @@ function CareerRoadmap() {
     });
   });
 
-  /*
-    Pick two skills from each selected career domain
-    in round-robin order.
-
-    Example:
-
-    Software    -> SQL, Java
-    Hardware    -> PCB, Circuit Design
-    Embedded    -> Microcontrollers, STM32
-  */
   const recommendedSkills = [];
 
   const recommendationsPerDomain = 2;
@@ -257,27 +237,21 @@ function CareerRoadmap() {
     });
   }
 
-  const isRecommended = (skill) =>
-    recommendedSkills.some(
-      (recommended) =>
-        recommended.skill === skill.skill
-    );
-
   const highPriority = allSkills.filter(
-  (item) => item.priority === "High"
-);
+    (item) => item.priority === "High"
+  );
 
-const mediumPriority = allSkills.filter(
-  (item) => item.priority === "Medium"
-);
+  const mediumPriority = allSkills.filter(
+    (item) => item.priority === "Medium"
+  );
 
-const lowPriority = allSkills.filter(
-  (item) => item.priority === "Low"
-);
+  const lowPriority = allSkills.filter(
+    (item) => item.priority === "Low"
+  );
 
-const limitedData = allSkills.filter(
-  (item) => item.priority === "Limited Data"
-);
+  const limitedData = allSkills.filter(
+    (item) => item.priority === "Limited Data"
+  );
 
   const totalSkills = allSkills.length;
 
@@ -297,13 +271,13 @@ const limitedData = allSkills.filter(
     learningSkills;
 
   const progressPercentage =
-  totalSkills > 0
-    ? Math.round(
-        ((completedSkills + learningSkills * 0.5) /
-          totalSkills) *
-          100
-      )
-    : 0;
+    totalSkills > 0
+      ? Math.round(
+          ((completedSkills + learningSkills * 0.5) /
+            totalSkills) *
+            100
+        )
+      : 0;
 
   const selectedStatus = selectedSkill
     ? skillStatus[selectedSkill.skill] ||
@@ -311,22 +285,14 @@ const limitedData = allSkills.filter(
     : "Not Started";
 
   const getRecommendationText = (item) => {
+    if (item.reason) {
+      return item.reason;
+    }
+
     if (Number(item.posting_count || 0) > 0) {
-      if (item.priority === "High") {
-        return `Appears in ${Number(
-          item.posting_count
-        ).toLocaleString()} job postings in the current ResumeLens dataset.`;
-      }
-
-      if (item.priority === "Medium") {
-        return `Appears in ${Number(
-          item.posting_count
-        ).toLocaleString()} job postings, showing moderate demand in the current dataset.`;
-      }
-
       return `Appears in ${Number(
         item.posting_count
-      ).toLocaleString()} job postings, so it may be worth considering later.`;
+      ).toLocaleString()} job postings in the current ResumeLens dataset.`;
     }
 
     return "This skill is relevant to your selected career direction, but the current ResumeLens job dataset has no matching posting data for it.";
@@ -351,6 +317,7 @@ const limitedData = allSkills.filter(
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="mx-auto max-w-6xl px-6 py-10">
+
         {/* HEADER */}
         <div className="mb-10">
           <p className="text-sm font-medium uppercase tracking-[0.2em] text-cyan-400">
@@ -411,7 +378,7 @@ const limitedData = allSkills.filter(
           </div>
 
           <div className="mt-8 grid gap-6 md:grid-cols-4">
-            <div className="md:col-span-2 rounded-2xl border border-slate-800 bg-slate-950 p-5">
+            <div className="rounded-2xl border border-slate-800 bg-slate-950 p-5 md:col-span-2">
               <div className="flex items-end justify-between gap-4">
                 <div>
                   <p className="text-sm text-slate-400">
@@ -499,17 +466,10 @@ const limitedData = allSkills.filter(
                             <h3 className="text-lg font-semibold text-white group-hover:text-cyan-300">
                               {item.skill}
                             </h3>
-                            <span
-  className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
-    item.priority_basis === "Job Market Data"
-      ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-300"
-      : "border-purple-500/30 bg-purple-500/10 text-purple-300"
-  }`}
->
-  {item.priority_basis === "Job Market Data"
-    ? "📊 Job Market Data"
-    : "🎓 Learning Recommendation"}
-</span>
+
+                            <SourceBadge
+                              basis={item.priority_basis}
+                            />
 
                             {item.career_domain && (
                               <span className="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-xs text-slate-400">
@@ -570,6 +530,12 @@ const limitedData = allSkills.filter(
                 <h2 className="mt-2 text-3xl font-bold">
                   {selectedSkill.skill}
                 </h2>
+
+                <div className="mt-3">
+                  <SourceBadge
+                    basis={selectedSkill.priority_basis}
+                  />
+                </div>
               </div>
 
               <button
@@ -651,9 +617,7 @@ const limitedData = allSkills.filter(
               </h3>
 
               <p className="mt-3 leading-7 text-slate-400">
-                {getRecommendationText(
-                  selectedSkill
-                )}
+                {getRecommendationText(selectedSkill)}
               </p>
             </div>
 
@@ -700,7 +664,7 @@ const limitedData = allSkills.filter(
         {/* MEDIUM PRIORITY */}
         <PrioritySection
           title="Medium Priority"
-          description="Skills with moderate demand in the current job-posting data."
+          description="Skills with moderate job-market demand or recommended as core learning priorities."
           items={mediumPriority}
           badgeClass={getPriorityBadgeClasses("Medium")}
           onSelect={selectSkill}
@@ -710,7 +674,7 @@ const limitedData = allSkills.filter(
         {/* LOW PRIORITY */}
         <PrioritySection
           title="Low Priority"
-          description="Skills with some job-posting evidence but relatively lower demand."
+          description="Skills with lower job-market demand or suggested for a later stage in your learning sequence."
           items={lowPriority}
           badgeClass={getPriorityBadgeClasses("Low")}
           onSelect={selectSkill}
@@ -722,15 +686,33 @@ const limitedData = allSkills.filter(
           title="Limited Data"
           description="Career-relevant skills for which the current job-posting dataset has no matching posting data."
           items={limitedData}
-          badgeClass={getPriorityBadgeClasses(
-            "Limited Data"
-          )}
+          badgeClass={getPriorityBadgeClasses("Limited Data")}
           onSelect={selectSkill}
           skillStatus={skillStatus}
           emptyMessage="No limited-data skills remain outside the recommended learning order."
         />
       </div>
     </div>
+  );
+}
+
+/* SOURCE BADGE */
+
+function SourceBadge({ basis }) {
+  const isMarketData = basis === "Job Market Data";
+
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${
+        isMarketData
+          ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-300"
+          : "border-purple-500/30 bg-purple-500/10 text-purple-300"
+      }`}
+    >
+      {isMarketData
+        ? "📊 Job Market Data"
+        : "🎓 Learning Recommendation"}
+    </span>
   );
 }
 
@@ -816,7 +798,7 @@ function PrioritySection({
               >
                 <div className="h-full rounded-2xl border border-slate-800 bg-slate-950 p-5 transition hover:border-cyan-500/30 hover:bg-slate-900">
                   <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="text-lg font-semibold text-white group-hover:text-cyan-300">
                         {item.skill}
                       </h3>
@@ -826,6 +808,12 @@ function PrioritySection({
                           {item.career_domain}
                         </p>
                       )}
+
+                      <div className="mt-3">
+                        <SourceBadge
+                          basis={item.priority_basis}
+                        />
+                      </div>
                     </div>
 
                     <span
