@@ -646,12 +646,23 @@ def get_skill_trends(
         total_postings - dated_postings
     )
 
+    # Support both PostgreSQL and SQLite
+    database_type = db.get_bind().dialect.name
+
+    if database_type == "postgresql":
+        week_expr = func.to_char(
+            models.JobPosting.first_published_at,
+            "IYYY-IW",
+        )
+    else:
+        week_expr = func.strftime(
+            "%Y-%W",
+            models.JobPosting.first_published_at,
+        )
+
     query = (
         db.query(
-            func.strftime(
-                "%Y-%W",
-                models.JobPosting.first_published_at,
-            ).label("week"),
+            week_expr.label("week"),
             models.Skill.name,
             func.count(
                 models.JobPostingSkill.posting_id
@@ -681,17 +692,12 @@ def get_skill_trends(
     rows = (
         query
         .group_by(
-            func.strftime(
-                "%Y-%W",
-                models.JobPosting.first_published_at,
-            ),
+            week_expr,
             models.Skill.id,
+            models.Skill.name,
         )
         .order_by(
-            func.strftime(
-                "%Y-%W",
-                models.JobPosting.first_published_at,
-            ),
+            week_expr,
             models.Skill.name,
         )
         .all()
@@ -712,8 +718,6 @@ def get_skill_trends(
         undated_postings=undated_postings,
         points=points,
     )
-
-
 # ---------------------------------------------------------
 # SKILL RANKINGS
 # ---------------------------------------------------------
