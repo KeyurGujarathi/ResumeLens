@@ -499,6 +499,17 @@ const limitedData = allSkills.filter(
                             <h3 className="text-lg font-semibold text-white group-hover:text-cyan-300">
                               {item.skill}
                             </h3>
+                            <span
+  className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
+    item.priority_basis === "Job Market Data"
+      ? "border-cyan-500/30 bg-cyan-500/10 text-cyan-300"
+      : "border-purple-500/30 bg-purple-500/10 text-purple-300"
+  }`}
+>
+  {item.priority_basis === "Job Market Data"
+    ? "📊 Job Market Data"
+    : "🎓 Learning Recommendation"}
+</span>
 
                             {item.career_domain && (
                               <span className="rounded-full border border-slate-700 bg-slate-900 px-2.5 py-1 text-xs text-slate-400">
