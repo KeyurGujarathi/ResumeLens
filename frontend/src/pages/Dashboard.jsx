@@ -244,7 +244,48 @@ function Dashboard() {
       resumeBuilderData ||
       resumeSkills.length > 0
   );
+  // Public dashboard: never display personal data when logged out.
+  if (!user) {
+    return (
+      <main className="min-h-screen bg-slate-950 px-6 py-16 text-white">
+        <div className="mx-auto max-w-5xl">
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 px-8 py-16 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-400">
+              ResumeLens
+            </p>
 
+            <h1 className="mt-4 text-4xl font-bold">
+              Welcome to Your Career Dashboard
+            </h1>
+
+            <p className="mx-auto mt-5 max-w-2xl leading-7 text-slate-400">
+              Build your resume, analyze your skills, explore career
+              opportunities, identify skill gaps, and prepare for placements
+              with ResumeLens.
+            </p>
+
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="rounded-xl bg-cyan-500 px-6 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400"
+              >
+                Login to Your Account
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate("/register")}
+                className="rounded-xl border border-slate-700 px-6 py-3 font-semibold text-white transition hover:bg-slate-800"
+              >
+                Create Free Account
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
       <div className="mx-auto max-w-7xl">
