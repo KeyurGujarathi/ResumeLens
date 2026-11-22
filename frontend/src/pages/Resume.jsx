@@ -485,8 +485,14 @@ function ResumePreview({
           </section>
         )}
 
-        {hasExperience && (
-          <section>
+    {hasExperience && (
+  <section
+    className={
+      resume.pageLayout === "two"
+        ? "resume-page-two-start"
+        : ""
+    }
+  >
             <h2
               className={`mt-5 border-b pb-1 text-[11px] font-bold uppercase tracking-widest ${theme.sectionBorder} ${theme.sectionText}`}
             >
@@ -1315,6 +1321,11 @@ function Resume() {
             break-inside: avoid;
             page-break-inside: avoid;
           }
+            /* Start Experience on page 2 in the two-page layout */
+.resume-layout-two .resume-page-two-start {
+  break-before: page !important;
+  page-break-before: always !important;
+}
 
           .resume-print-preview header,
           .resume-print-preview h2 {
