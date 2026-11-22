@@ -127,13 +127,9 @@ function AppRoutes() {
         {/* PROTECTED PAGES */}
 
         <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+  path="/dashboard"
+  element={<Dashboard />}
+/>
 
         <Route
           path="/skills"
