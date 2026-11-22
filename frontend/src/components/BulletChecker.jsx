@@ -1,4 +1,4 @@
-import API_BASE from "../utils/api.js";
+import API_BASE, { getAuthHeaders } from "../utils/api.js";
 import { useState } from "react";
 
 function BulletChecker({ bullet }) {
@@ -24,9 +24,9 @@ function BulletChecker({ bullet }) {
         `${API_BASE}/api/bullets/analyze`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+        headers: getAuthHeaders({
+  "Content-Type": "application/json",
+}),
           body: JSON.stringify({
             bullet: cleanedBullet,
           }),

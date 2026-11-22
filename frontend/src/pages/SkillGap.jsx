@@ -1,5 +1,4 @@
-import API_BASE from "../utils/api.js";
-import { useEffect, useState } from "react";
+import API_BASE, { getAuthHeaders } from "../utils/api.js";import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -132,9 +131,9 @@ function SkillGap() {
         `${API_BASE}/api/skill-gap`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+         headers: getAuthHeaders({
+  "Content-Type": "application/json",
+}),
           body: JSON.stringify({
             skills: resumeSkills,
             branch: careerProfile.branch || "",

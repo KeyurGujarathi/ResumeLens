@@ -1,4 +1,4 @@
-import API_BASE from "../utils/api.js";
+import API_BASE, { getAuthHeaders } from "../utils/api.js";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -137,9 +137,9 @@ function ResumeImprovement() {
         `${API_BASE}/api/bullets/analyze`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+        headers: getAuthHeaders({
+  "Content-Type": "application/json",
+}),
           body: JSON.stringify({
             bullet: cleanedBullet,
           }),

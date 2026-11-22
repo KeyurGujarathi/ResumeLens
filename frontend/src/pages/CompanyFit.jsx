@@ -1,4 +1,4 @@
-import API_BASE from "../utils/api.js";
+import API_BASE, { getAuthHeaders } from "../utils/api.js";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -216,10 +216,9 @@ const [result, setResult] = useState(() => {
         `${API_BASE}/api/company-fit`,
         {
           method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
+         headers: getAuthHeaders({
+  "Content-Type": "application/json",
+}),
           body: JSON.stringify({
             company: selectedCompany,
             skills,

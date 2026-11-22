@@ -1,4 +1,4 @@
-import API_BASE from "../utils/api.js";
+import API_BASE, { getAuthHeaders } from "../utils/api.js";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -164,6 +164,7 @@ function ResumeAnalyzer() {
         `${API_BASE}/api/resume/analyze`,
         {
           method: "POST",
+          headers: getAuthHeaders(),
           body: formData,
         }
       );
@@ -296,10 +297,9 @@ function ResumeAnalyzer() {
           {
             method: "POST",
 
-            headers: {
-              "Content-Type":
-                "application/json",
-            },
+          headers: getAuthHeaders({
+  "Content-Type": "application/json",
+}),
 
             body: JSON.stringify({
               skills:

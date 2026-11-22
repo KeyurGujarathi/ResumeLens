@@ -15,4 +15,13 @@ function resolveApiBase() {
 
 const API_BASE = resolveApiBase();
 
+export function getAuthHeaders(extraHeaders = {}) {
+  const token = localStorage.getItem("resumelens_auth_token");
+
+  return {
+    ...extraHeaders,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
 export default API_BASE;

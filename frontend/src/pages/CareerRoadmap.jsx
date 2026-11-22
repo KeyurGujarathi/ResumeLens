@@ -1,4 +1,4 @@
-import API_BASE from "../utils/api.js";
+import API_BASE, { getAuthHeaders } from "../utils/api.js";
 import { useEffect, useRef, useState } from "react";
 
 function CareerRoadmap() {
@@ -47,9 +47,9 @@ function CareerRoadmap() {
           `${API_BASE}/api/career-roadmap`,
           {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+           headers: getAuthHeaders({
+  "Content-Type": "application/json",
+}),
             body: JSON.stringify({
               skills: analysis.detected_skills || [],
               branch: profile.branch || "",

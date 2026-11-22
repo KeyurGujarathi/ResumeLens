@@ -12,8 +12,7 @@ from taxonomy import extract_skills
 from database import engine, Base, SessionLocal
 import models
 from auth import router as auth_router
-from admin_data import router as data_admin_router
-
+from admin_data import router as data_admin_router, get_user
 from schemas import (
     SkillCount,
     SkillTrendPoint,
@@ -751,7 +750,7 @@ def get_companies(
 # CAREER PROFILE
 # ---------------------------------------------------------
 
-@app.post("/api/career-profile")
+@app.post("/api/career-profile", dependencies=[Depends(get_user)])
 async def save_career_profile(request: dict):
     branch = request.get("branch", "")
     career_interests = request.get("career_interests", [])
@@ -791,7 +790,7 @@ async def save_career_profile(request: dict):
 # SKILL GAP
 # ---------------------------------------------------------
 
-@app.post("/api/skill-gap")
+@app.post("/api/skill-gap", dependencies=[Depends(get_user)])
 def calculate_skill_gap(
     request: dict,
     db: Session = Depends(get_db),
@@ -977,10 +976,9 @@ def calculate_skill_gap(
 @app.post(
     "/api/bullets/analyze",
     response_model=BulletAnalysis,
+    dependencies=[Depends(get_user)],
 )
-def analyze_resume_bullet(
-    request: BulletRequest,
-):
+def analyze_resume_bullet(request: BulletRequest):
     findings = analyze_bullet(request.bullet)
 
     return BulletAnalysis(
@@ -996,6 +994,7 @@ def analyze_resume_bullet(
 @app.post(
     "/api/company-fit",
     response_model=CompanyFitResponse,
+     dependencies=[Depends(get_user)],
 )
 def get_company_fit(
     request: CompanyFitRequest,
@@ -1128,7 +1127,7 @@ def get_company_fit(
 # RESUME ANALYZER
 # ---------------------------------------------------------
 
-@app.post("/api/resume/analyze")
+@app.post("/api/resume/analyze", dependencies=[Depends(get_user)])
 async def analyze_resume(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -1149,14 +1148,6 @@ async def analyze_resume(
     for page in reader.pages:
         page_text = page.extract_text() or ""
         extracted_text += page_text + "\n"
-
-    print()
-    print("==============================================")
-    print("EXTRACTED RESUME TEXT")
-    print("==============================================")
-    print(repr(extracted_text))
-    print("==============================================")
-    print()
 
     detected_skills = extract_skills(extracted_text)
 
@@ -1186,10 +1177,11 @@ async def analyze_resume(
 # CAREER ROADMAP
 # ---------------------------------------------------------
 
-@app.post("/api/career-roadmap")
+@app.post("/api/career-roadmap", dependencies=[Depends(get_user)])
 def get_career_roadmap(
     request: dict,
     db: Session = Depends(get_db),
+
 ):
     try:
         skills = request.get("skills", [])

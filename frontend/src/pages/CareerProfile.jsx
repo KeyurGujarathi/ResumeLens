@@ -1,4 +1,4 @@
-import API_BASE from "../utils/api.js";
+import API_BASE, { getAuthHeaders } from "../utils/api.js";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -255,9 +255,9 @@ function CareerProfile() {
         `${API_BASE}/api/career-profile`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: getAuthHeaders({
+  "Content-Type": "application/json",
+}),
           body: JSON.stringify(profileToSave),
         }
       );
