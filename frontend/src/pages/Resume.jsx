@@ -1246,8 +1246,130 @@ function Resume() {
   };
 
   const handlePrint = () => {
-    window.print();
+  const resumeElement = document.querySelector(".resume-print-preview");
+
+  if (!resumeElement) {
+    alert("Resume preview not found. Please refresh and try again.");
+    return;
+  }
+
+  const printWindow = window.open("", "_blank", "width=900,height=700");
+
+  if (!printWindow) {
+    alert("Please allow pop-ups to print or save your resume.");
+    return;
+  }
+
+  const clonedResume = resumeElement.cloneNode(true);
+
+  const styles = Array.from(
+    document.querySelectorAll('link[rel="stylesheet"], style')
+  )
+    .map((style) => style.outerHTML)
+    .join("\n");
+
+  printWindow.document.open();
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <base href="${window.location.origin}/" />
+        <title>Resume - ResumeLens</title>
+
+        ${styles}
+
+        <style>
+          @page {
+            size: A4;
+            margin: 10mm;
+          }
+
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            min-height: 0 !important;
+            background: white !important;
+            overflow: visible !important;
+          }
+
+          .resume-print-preview {
+            position: static !important;
+            width: 190mm !important;
+            max-width: 190mm !important;
+            min-height: 0 !important;
+            height: auto !important;
+            max-height: none !important;
+            margin: 0 auto !important;
+            overflow: visible !important;
+            box-shadow: none !important;
+            background: white !important;
+            color: #1e293b !important;
+            box-sizing: border-box !important;
+          }
+
+          .resume-print-preview section {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+
+          .resume-print-preview header,
+          .resume-print-preview h2 {
+            break-after: avoid;
+            page-break-after: avoid;
+          }
+
+          .resume-print-preview p,
+          .resume-print-preview li {
+            orphans: 2;
+            widows: 2;
+          }
+
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+
+          @media screen {
+            body {
+              padding: 20px !important;
+            }
+          }
+        </style>
+      </head>
+
+      <body>
+        ${clonedResume.outerHTML}
+      </body>
+    </html>
+  `);
+
+  const startPrinting = async () => {
+    try {
+      if (printWindow.document.fonts) {
+        await printWindow.document.fonts.ready;
+      }
+
+      printWindow.focus();
+      printWindow.print();
+    } catch (error) {
+      console.error("Resume printing failed:", error);
+      printWindow.print();
+    }
   };
+
+  printWindow.document.close();
+  printWindow.addEventListener("load", startPrinting, { once: true });
+
+  setTimeout(() => {
+    if (!printWindow.closed) {
+      startPrinting();
+    }
+  }, 1500);
+};
 
   /* -------------------------------------------------------
      IMPORT DETECTED SKILLS
