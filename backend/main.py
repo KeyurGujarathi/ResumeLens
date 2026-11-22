@@ -85,17 +85,7 @@ def get_db():
         db.close()
 
 
-@app.get("/api/debug/database")
-def debug_database(db: Session = Depends(get_db)):
-    return {
-        "database_type": engine.dialect.name,
-        "database_host": engine.url.host,
-        "database_name": engine.url.database,
-        "companies": db.query(models.Company).count(),
-        "skills": db.query(models.Skill).count(),
-        "job_postings": db.query(models.JobPosting).count(),
-        "job_posting_skills": db.query(models.JobPostingSkill).count(),
-    }
+
 
 
 # ---------------------------------------------------------
