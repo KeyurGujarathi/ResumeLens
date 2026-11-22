@@ -23,6 +23,9 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Landing from "./pages/Landing.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import Footer from "./components/Footer.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
+import TermsAndConditions from "./pages/TermsAndConditions.jsx";
 
 import {
   AuthProvider,
@@ -236,8 +239,17 @@ function AppRoutes() {
             />
           }
         />
+<Route
+  path="/privacy-policy"
+  element={<PrivacyPolicy />}
+/>
 
+<Route
+  path="/terms-and-conditions"
+  element={<TermsAndConditions />}
+/>
       </Routes>
+      <Footer />
     </>
   );
 }
