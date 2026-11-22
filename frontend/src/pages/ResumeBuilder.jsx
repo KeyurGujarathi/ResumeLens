@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "resumelens_resume_builder";
 const DATA_KEY = "resume_builder";
-
-const API_URL = "http://127.0.0.1:8000";
-
+import API_BASE from "../utils/api.js";
+const API_URL = API_BASE;
 const initialData = {
   name: "",
   email: "",

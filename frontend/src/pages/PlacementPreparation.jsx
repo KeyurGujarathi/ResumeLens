@@ -1022,133 +1022,85 @@ function Card({ children, className = "" }) {
 }
 
 /* =========================================================
+   SAFE LOCAL STORAGE HELPERS
+========================================================= */
+
+function readStorage(key, fallback = null) {
+  try {
+    const saved = localStorage.getItem(key);
+
+    return saved ? JSON.parse(saved) : fallback;
+  } catch (error) {
+    console.error(`Could not read ${key}:`, error);
+    return fallback;
+  }
+}
+
+function getCurrentUserId() {
+  return localStorage.getItem("resumelens_user_id") || "guest";
+}
+
+/* =========================================================
    PLACEMENT PREPARATION
 ========================================================= */
 
 function PlacementPreparation() {
   const navigate = useNavigate();
 
-  const [topicProgress, setTopicProgress] =
-    useState({});
+  const userId = getCurrentUserId();
 
-  const [questionProgress, setQuestionProgress] =
-    useState({});
+  const [topicProgress, setTopicProgress] = useState({});
+  const [questionProgress, setQuestionProgress] = useState({});
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [submittedAnswers, setSubmittedAnswers] = useState({});
 
-  const [selectedAnswers, setSelectedAnswers] =
-    useState({});
-
-  const [submittedAnswers, setSubmittedAnswers] =
-    useState({});
-
-  const [progressLoaded, setProgressLoaded] =
-    useState(false);
-
-  const [quizLoaded, setQuizLoaded] =
-    useState(false);
+  const [loadedStorageKey, setLoadedStorageKey] = useState("");
 
   /* -------------------------------------------------------
      CAREER PROFILE
   ------------------------------------------------------- */
 
-  const careerProfile = useMemo(() => {
-    const saved = localStorage.getItem(
-      "resumelens_career_profile"
-    );
-
-    if (!saved) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(saved);
-    } catch {
-      return null;
-    }
-  }, []);
+  const careerProfile = useMemo(
+    () => readStorage("resumelens_career_profile"),
+    []
+  );
 
   /* -------------------------------------------------------
      RESUME ANALYSIS
   ------------------------------------------------------- */
 
-  const resumeAnalysis = useMemo(() => {
-    const saved = localStorage.getItem(
-      "resumelens_resume_analysis"
-    );
-
-    if (!saved) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(saved);
-    } catch {
-      return null;
-    }
-  }, []);
+  const resumeAnalysis = useMemo(
+    () => readStorage("resumelens_resume_analysis"),
+    []
+  );
 
   /* -------------------------------------------------------
      RESUME SKILLS
   ------------------------------------------------------- */
 
   const resumeSkills = useMemo(() => {
-    const saved = localStorage.getItem(
-      "resumelens_resume_skills"
-    );
+    const parsed = readStorage("resumelens_resume_skills", []);
 
-    if (!saved) {
-      return [];
-    }
-
-    try {
-      const parsed = JSON.parse(saved);
-
-      return Array.isArray(parsed)
-        ? parsed
-        : [];
-    } catch {
-      return [];
-    }
+    return Array.isArray(parsed) ? parsed : [];
   }, []);
 
   /* -------------------------------------------------------
      SKILL GAP
   ------------------------------------------------------- */
 
-  const skillGap = useMemo(() => {
-    const saved = localStorage.getItem(
-      "careerSkillGap"
-    );
-
-    if (!saved) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(saved);
-    } catch {
-      return null;
-    }
-  }, []);
+  const skillGap = useMemo(
+    () => readStorage("careerSkillGap"),
+    []
+  );
 
   /* -------------------------------------------------------
      COMPANY FIT
   ------------------------------------------------------- */
 
-  const companyFit = useMemo(() => {
-    const saved = localStorage.getItem(
-      "resumelens_company_fit"
-    );
-
-    if (!saved) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(saved);
-    } catch {
-      return null;
-    }
-  }, []);
+  const companyFit = useMemo(
+    () => readStorage("resumelens_company_fit"),
+    []
+  );
 
   /* -------------------------------------------------------
      CAREER DATA
@@ -1161,136 +1113,120 @@ function PlacementPreparation() {
     : [];
 
   const primaryCareer =
-    careerInterests[0] ||
-    "General Engineering";
+    careerInterests[0] || "General Engineering";
 
   const primaryPrep =
-    PREP_BY_CAREER[primaryCareer] ||
-    DEFAULT_PREP;
+    PREP_BY_CAREER[primaryCareer] || DEFAULT_PREP;
+
+  /* -------------------------------------------------------
+     USER-SPECIFIC STORAGE KEYS
+  ------------------------------------------------------- */
+
+  const encodedCareer = encodeURIComponent(primaryCareer);
 
   const progressKey =
-    `resumelens_placement_progress_${primaryCareer}`;
+    `resumelens_user_${userId}_placement_progress_${encodedCareer}`;
 
   const quizKey =
-    `resumelens_placement_quiz_${primaryCareer}`;
+    `resumelens_user_${userId}_placement_quiz_${encodedCareer}`;
+
+  const summaryKey =
+    `resumelens_user_${userId}_placement_summary`;
 
   /* -------------------------------------------------------
      RESUME SCORE
   ------------------------------------------------------- */
 
   const resumeScore =
-    typeof resumeAnalysis?.resume_score ===
-    "object"
-      ? resumeAnalysis?.resume_score
-          ?.overall_score
+    typeof resumeAnalysis?.resume_score === "object"
+      ? resumeAnalysis?.resume_score?.overall_score
       : resumeAnalysis?.resume_score;
 
   /* -------------------------------------------------------
      SKILL GAP COUNT
   ------------------------------------------------------- */
 
-  const careerTracks =
-    Array.isArray(
-      skillGap?.career_tracks
-    )
-      ? skillGap.career_tracks
-      : [];
+  const careerTracks = Array.isArray(skillGap?.career_tracks)
+    ? skillGap.career_tracks
+    : [];
 
-  const uniqueMissingSkills =
-    Array.from(
-      new Set(
-        careerTracks.flatMap(
-          (track) =>
-            Array.isArray(
-              track.missing_skills
-            )
-              ? track.missing_skills
-                  .map(
-                    (item) =>
-                      item.skill
-                  )
-                  .filter(Boolean)
-              : []
-        )
+  const uniqueMissingSkills = Array.from(
+    new Set(
+      careerTracks.flatMap((track) =>
+        Array.isArray(track.missing_skills)
+          ? track.missing_skills
+              .map((item) => item.skill)
+              .filter(Boolean)
+          : []
       )
-    );
+    )
+  );
 
-  const totalGaps =
-    uniqueMissingSkills.length;
+  const totalGaps = uniqueMissingSkills.length;
 
   /* -------------------------------------------------------
-     LOAD TOPIC / QUESTION PROGRESS
+     LOAD ALL PROGRESS FOR CURRENT USER AND CAREER
+
+     A single combined load effect prevents old career data
+     from being accidentally saved under a new career key.
   ------------------------------------------------------- */
 
   useEffect(() => {
-    const saved = localStorage.getItem(
-      progressKey
-    );
+    setLoadedStorageKey("");
 
-    if (!saved) {
-      setTopicProgress({});
-      setQuestionProgress({});
-      setProgressLoaded(true);
-      return;
+    const legacyProgressKey =
+      `resumelens_placement_progress_${primaryCareer}`;
+
+    const legacyQuizKey =
+      `resumelens_placement_quiz_${primaryCareer}`;
+
+    let savedProgress = readStorage(progressKey);
+    let savedQuiz = readStorage(quizKey);
+
+    // Migrate old progress if the new user-specific key
+    // does not exist yet.
+    if (!savedProgress) {
+      savedProgress = readStorage(legacyProgressKey);
+
+      if (savedProgress) {
+        localStorage.setItem(
+          progressKey,
+          JSON.stringify(savedProgress)
+        );
+      }
     }
 
-    try {
-      const parsed = JSON.parse(saved);
+    // Migrate old quiz data if needed.
+    if (!savedQuiz) {
+      savedQuiz = readStorage(legacyQuizKey);
 
-      setTopicProgress(
-        parsed?.topics || {}
-      );
-
-      setQuestionProgress(
-        parsed?.questions || {}
-      );
-    } catch (error) {
-      console.error(
-        "Placement progress parsing failed:",
-        error
-      );
-
-      setTopicProgress({});
-      setQuestionProgress({});
+      if (savedQuiz) {
+        localStorage.setItem(
+          quizKey,
+          JSON.stringify(savedQuiz)
+        );
+      }
     }
 
-    setProgressLoaded(true);
-  }, [progressKey]);
+    setTopicProgress(savedProgress?.topics || {});
+    setQuestionProgress(savedProgress?.questions || {});
+
+    setSelectedAnswers(savedQuiz?.selected || {});
+    setSubmittedAnswers(savedQuiz?.submitted || {});
+
+    // Mark the storage scope as loaded only after all
+    // four states have been initialized.
+    setLoadedStorageKey(`${progressKey}|${quizKey}`);
+  }, [progressKey, quizKey, primaryCareer]);
 
   /* -------------------------------------------------------
-     LOAD QUIZ PROGRESS
+     SAVE TOPIC AND QUESTION PROGRESS
   ------------------------------------------------------- */
 
   useEffect(() => {
-    setQuizLoaded(false);
-    const saved = localStorage.getItem(quizKey);
+    const currentStorageKey = `${progressKey}|${quizKey}`;
 
-    if (!saved) {
-      setSelectedAnswers({});
-      setSubmittedAnswers({});
-      setQuizLoaded(true);
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(saved);
-      setSelectedAnswers(parsed?.selected || {});
-      setSubmittedAnswers(parsed?.submitted || {});
-    } catch (error) {
-      console.error("Placement quiz parsing failed:", error);
-      setSelectedAnswers({});
-      setSubmittedAnswers({});
-    }
-
-    setQuizLoaded(true);
-  }, [quizKey]);
-
-  /* -------------------------------------------------------
-     SAVE TOPIC / QUESTION PROGRESS
-  ------------------------------------------------------- */
-
-  useEffect(() => {
-    if (!progressLoaded) {
+    if (loadedStorageKey !== currentStorageKey) {
       return;
     }
 
@@ -1305,7 +1241,8 @@ function PlacementPreparation() {
     topicProgress,
     questionProgress,
     progressKey,
-    progressLoaded,
+    quizKey,
+    loadedStorageKey,
   ]);
 
   /* -------------------------------------------------------
@@ -1313,7 +1250,9 @@ function PlacementPreparation() {
   ------------------------------------------------------- */
 
   useEffect(() => {
-    if (!quizLoaded) {
+    const currentStorageKey = `${progressKey}|${quizKey}`;
+
+    if (loadedStorageKey !== currentStorageKey) {
       return;
     }
 
@@ -1324,7 +1263,13 @@ function PlacementPreparation() {
         submitted: submittedAnswers,
       })
     );
-  }, [selectedAnswers, submittedAnswers, quizKey, quizLoaded]);
+  }, [
+    selectedAnswers,
+    submittedAnswers,
+    progressKey,
+    quizKey,
+    loadedStorageKey,
+  ]);
 
   /* -------------------------------------------------------
      TOPIC TOGGLE
@@ -1342,127 +1287,111 @@ function PlacementPreparation() {
   ------------------------------------------------------- */
 
   const toggleQuestion = (questionText) => {
-    setQuestionProgress(
-      (current) => ({
-        ...current,
-        [questionText]:
-          !current[questionText],
-      })
-    );
+    setQuestionProgress((current) => ({
+      ...current,
+      [questionText]: !current[questionText],
+    }));
   };
 
   /* -------------------------------------------------------
      SELECT ANSWER
   ------------------------------------------------------- */
 
-  const selectAnswer = (
-    questionText,
-    answerIndex
-  ) => {
-    setSelectedAnswers(
-      (current) => ({
-        ...current,
-        [questionText]:
-          answerIndex,
-      })
-    );
+  const selectAnswer = (questionText, answerIndex) => {
+    setSelectedAnswers((current) => ({
+      ...current,
+      [questionText]: answerIndex,
+    }));
 
-    setSubmittedAnswers(
-      (current) => {
-        const next = {
-          ...current,
-        };
+    setSubmittedAnswers((current) => {
+      const next = { ...current };
 
-        delete next[questionText];
+      delete next[questionText];
 
-        return next;
-      }
-    );
+      return next;
+    });
   };
 
   /* -------------------------------------------------------
      SUBMIT ANSWER
   ------------------------------------------------------- */
 
-  const submitAnswer = (
-    question
-  ) => {
-    if (
-      selectedAnswers[
-        question.question
-      ] === undefined
-    ) {
+  const submitAnswer = (question) => {
+    const selected = selectedAnswers[question.question];
+
+    if (selected === undefined) {
       return;
     }
 
-    setSubmittedAnswers(
-      (current) => ({
-        ...current,
-        [question.question]:
-          selectedAnswers[
-            question.question
-          ] === question.answer,
-      })
-    );
+    setSubmittedAnswers((current) => ({
+      ...current,
+      [question.question]: selected === question.answer,
+    }));
   };
 
   /* -------------------------------------------------------
-     RESET EVERYTHING
+     RESET QUIZ
   ------------------------------------------------------- */
 
   const resetQuiz = () => {
     setSelectedAnswers({});
     setSubmittedAnswers({});
+
     localStorage.removeItem(quizKey);
   };
 
+  /* -------------------------------------------------------
+     RESET ALL PRACTICE PROGRESS
+  ------------------------------------------------------- */
+
   const resetPracticeProgress = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to reset all placement preparation progress for this career?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
     setTopicProgress({});
     setQuestionProgress({});
     setSelectedAnswers({});
     setSubmittedAnswers({});
 
-    localStorage.removeItem(
-      progressKey
-    );
+    localStorage.removeItem(progressKey);
+    localStorage.removeItem(quizKey);
 
-    localStorage.removeItem(
-      quizKey
-    );
+    localStorage.removeItem(summaryKey);
   };
 
   /* -------------------------------------------------------
      TOPIC / QUESTION COUNTS
   ------------------------------------------------------- */
 
-  const completedTopics =
-    primaryPrep.topics.filter(
-      (topic) =>
-        topicProgress[topic]
-    ).length;
+  const totalTopics = primaryPrep.topics.length;
+  const totalQuestions = primaryPrep.questions.length;
 
-  const completedQuestions =
-    primaryPrep.questions.filter(
-      (question) =>
-        questionProgress[
-          question.question
-        ]
-    ).length;
+  const completedTopics = primaryPrep.topics.filter(
+    (topic) => topicProgress[topic]
+  ).length;
 
-  const totalPracticeItems =
-    primaryPrep.topics.length +
-    primaryPrep.questions.length;
+  const remainingTopics = totalTopics - completedTopics;
+
+  const completedQuestions = primaryPrep.questions.filter(
+    (question) => questionProgress[question.question]
+  ).length;
+
+  const remainingQuestions = totalQuestions - completedQuestions;
+
+  const totalPracticeItems = totalTopics + totalQuestions;
 
   const completedPracticeItems =
-    completedTopics +
-    completedQuestions;
+    completedTopics + completedQuestions;
 
   const preparationProgress =
     totalPracticeItems > 0
       ? Math.round(
-          (completedPracticeItems /
-            totalPracticeItems) *
-            100
+          (completedPracticeItems / totalPracticeItems) * 100
         )
       : 0;
 
@@ -1470,69 +1399,132 @@ function PlacementPreparation() {
      QUIZ COUNTS
   ------------------------------------------------------- */
 
-  const answeredQuestions =
-    primaryPrep.questions.filter(
-      (question) =>
-        submittedAnswers[
-          question.question
-        ] !== undefined
-    ).length;
+  const answeredQuestions = primaryPrep.questions.filter(
+    (question) =>
+      submittedAnswers[question.question] !== undefined
+  ).length;
 
-  const correctAnswers =
-    primaryPrep.questions.filter(
-      (question) =>
-        submittedAnswers[
-          question.question
-        ] === true
-    ).length;
+  const correctAnswers = primaryPrep.questions.filter(
+    (question) =>
+      submittedAnswers[question.question] === true
+  ).length;
+
+  const incorrectAnswers =
+    answeredQuestions - correctAnswers;
+
+  const unansweredQuestions =
+    totalQuestions - answeredQuestions;
 
   const quizScore =
     answeredQuestions > 0
       ? Math.round(
-          (correctAnswers /
-            answeredQuestions) *
-            100
+          (correctAnswers / answeredQuestions) * 100
         )
       : 0;
 
   /* -------------------------------------------------------
-     READINESS
+     PROFILE READINESS CHECKLIST
   ------------------------------------------------------- */
 
   const readinessItems = [
     {
       label: "Resume analyzed",
-      completed:
-        Boolean(resumeAnalysis),
+      completed: Boolean(resumeAnalysis),
     },
     {
       label: "Career direction selected",
-      completed:
-        careerInterests.length > 0,
+      completed: careerInterests.length > 0,
     },
     {
       label: "Skill gap analyzed",
-      completed:
-        Boolean(skillGap),
+      completed: Boolean(skillGap),
     },
     {
       label: "Company fit explored",
-      completed:
-        Boolean(companyFit),
+      completed: Boolean(companyFit),
     },
   ];
 
-  const completedItems =
-    readinessItems.filter(
-      (item) => item.completed
-    ).length;
+  const completedItems = readinessItems.filter(
+    (item) => item.completed
+  ).length;
 
-  const profileCompletion =
-    Math.round(
-      (completedItems /
-        readinessItems.length) *
-        100
+  const profileCompletion = Math.round(
+    (completedItems / readinessItems.length) * 100
+  );
+
+  /* -------------------------------------------------------
+     PREPARATION READINESS
+
+     This is a preparation indicator, not a prediction
+     of placement or hiring probability.
+  ------------------------------------------------------- */
+
+  const preparationReadiness = Math.round(
+    (preparationProgress + profileCompletion) / 2
+  );
+
+  /* -------------------------------------------------------
+     SAVE SUMMARY FOR DASHBOARD INTEGRATION
+  ------------------------------------------------------- */
+
+  useEffect(() => {
+    const currentStorageKey = `${progressKey}|${quizKey}`;
+
+    if (loadedStorageKey !== currentStorageKey) {
+      return;
+    }
+
+    const summary = {
+      career: primaryCareer,
+
+      readiness: preparationReadiness,
+      preparationProgress,
+      profileCompletion,
+
+      completedTopics,
+      totalTopics,
+      remainingTopics,
+
+      practicedQuestions: completedQuestions,
+      totalQuestions,
+      remainingQuestions,
+
+      answeredQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      unansweredQuestions,
+
+      quizScore,
+
+      updatedAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(
+      summaryKey,
+      JSON.stringify(summary)
     );
+  }, [
+    loadedStorageKey,
+    progressKey,
+    quizKey,
+    summaryKey,
+    primaryCareer,
+    preparationReadiness,
+    preparationProgress,
+    profileCompletion,
+    completedTopics,
+    totalTopics,
+    remainingTopics,
+    completedQuestions,
+    totalQuestions,
+    remainingQuestions,
+    answeredQuestions,
+    correctAnswers,
+    incorrectAnswers,
+    unansweredQuestions,
+    quizScore,
+  ]);
 
   /* =======================================================
      UI
@@ -1554,9 +1546,9 @@ function PlacementPreparation() {
           </h1>
 
           <p className="mt-3 max-w-3xl text-slate-400">
-            Prepare for placements using your
-            resume, selected career direction,
-            skill gaps, and technical practice.
+            Prepare for placements using your resume,
+            selected career direction, skill gaps,
+            and technical practice.
           </p>
         </div>
 
@@ -1571,22 +1563,19 @@ function PlacementPreparation() {
               </p>
 
               <h2 className="mt-2 text-2xl font-semibold">
-                {careerProfile?.branch ||
-                  "Engineering Student"}
+                {careerProfile?.branch || "Engineering Student"}
               </h2>
 
               <div className="mt-3 flex flex-wrap gap-2">
                 {careerInterests.length > 0 ? (
-                  careerInterests.map(
-                    (interest) => (
-                      <span
-                        key={interest}
-                        className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-300"
-                      >
-                        {interest}
-                      </span>
-                    )
-                  )
+                  careerInterests.map((interest) => (
+                    <span
+                      key={interest}
+                      className="rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs text-slate-300"
+                    >
+                      {interest}
+                    </span>
+                  ))
                 ) : (
                   <span className="text-sm text-slate-500">
                     Career direction not selected yet.
@@ -1597,7 +1586,7 @@ function PlacementPreparation() {
 
             <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/10 px-7 py-5 text-center">
               <p className="text-xs uppercase tracking-widest text-cyan-300">
-                Career Profile Completion
+                Profile Completion
               </p>
 
               <p className="mt-2 text-4xl font-bold text-cyan-400">
@@ -1610,7 +1599,7 @@ function PlacementPreparation() {
 
         {/* SUMMARY CARDS */}
 
-        <div className="mt-6 grid gap-4 md:grid-cols-4">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
 
           <Card>
             <p className="text-sm text-slate-400">
@@ -1650,7 +1639,7 @@ function PlacementPreparation() {
             </p>
 
             <p className="mt-2 text-xs text-slate-500">
-              Unique skills to consider strengthening
+              Skills to consider strengthening
             </p>
           </Card>
 
@@ -1660,19 +1649,31 @@ function PlacementPreparation() {
             </p>
 
             <p className="mt-2 text-3xl font-bold text-cyan-400">
-              {answeredQuestions > 0
-                ? `${quizScore}%`
-                : "—"}
+              {answeredQuestions > 0 ? `${quizScore}%` : "—"}
             </p>
 
             <p className="mt-2 text-xs text-slate-500">
-              Based on submitted practice answers
+              Based on submitted answers
+            </p>
+          </Card>
+
+          <Card>
+            <p className="text-sm text-slate-400">
+              Preparation Readiness
+            </p>
+
+            <p className="mt-2 text-3xl font-bold text-emerald-400">
+              {preparationReadiness}%
+            </p>
+
+            <p className="mt-2 text-xs text-slate-500">
+              Based on practice and profile completion
             </p>
           </Card>
 
         </div>
 
-        {/* REAL PREPARATION PROGRESS */}
+               {/* PREPARATION PROGRESS */}
 
         <section className="mt-8">
           <Card>
@@ -1684,17 +1685,13 @@ function PlacementPreparation() {
                 </p>
 
                 <h2 className="mt-2 text-2xl font-semibold">
-                  {preparationProgress}%
-                  {" "}Complete
+                  {preparationProgress}% Complete
                 </h2>
 
                 <p className="mt-2 text-sm text-slate-400">
-                  {completedTopics} of{" "}
-                  {primaryPrep.topics.length}{" "}
-                  technical topics completed and{" "}
-                  {completedQuestions} of{" "}
-                  {primaryPrep.questions.length}{" "}
-                  interview questions practiced.
+                  {completedTopics} of {totalTopics} topics completed
+                  and {completedQuestions} of {totalQuestions} questions
+                  practiced.
                 </p>
               </div>
 
@@ -1710,6 +1707,8 @@ function PlacementPreparation() {
 
             </div>
 
+            {/* PROGRESS BAR */}
+
             <div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-800">
               <div
                 className="h-full rounded-full bg-cyan-500 transition-all duration-500"
@@ -1718,6 +1717,45 @@ function PlacementPreparation() {
                 }}
               />
             </div>
+
+            {/* REMAINING PROGRESS CARDS */}
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+
+              {/* REMAINING TOPICS */}
+
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+                <p className="text-sm font-semibold text-amber-800">
+                  Remaining Topics
+                </p>
+
+                <p className="mt-1 text-2xl font-bold text-amber-950">
+                  {remainingTopics}
+                </p>
+
+                <p className="mt-1 text-xs text-amber-700">
+                  Topics left to complete
+                </p>
+              </div>
+
+              {/* REMAINING PRACTICE QUESTIONS */}
+
+              <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 shadow-sm">
+                <p className="text-sm font-semibold text-sky-800">
+                  Remaining Practice Questions
+                </p>
+
+                <p className="mt-1 text-2xl font-bold text-sky-950">
+                  {remainingQuestions}
+                </p>
+
+                <p className="mt-1 text-xs text-sky-700">
+                  Questions left to practice
+                </p>
+              </div>
+
+            </div>
+
           </Card>
         </section>
 
@@ -1735,76 +1773,63 @@ function PlacementPreparation() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Mark each topic as complete after
-              revising the fundamentals and practicing
-              enough questions.
+              Mark each topic as complete after revising the
+              fundamentals and practicing enough questions.
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-            {primaryPrep.topics.map(
-              (topic, index) => {
-                const completed =
-                  Boolean(
-                    topicProgress[topic]
-                  );
+            {primaryPrep.topics.map((topic, index) => {
+              const completed = Boolean(topicProgress[topic]);
 
-                return (
-                  <button
-                    key={topic}
-                    type="button"
-                    onClick={() =>
-                      toggleTopic(topic)
-                    }
-                    className={`rounded-2xl border p-5 text-left transition ${
-                      completed
-                        ? "border-emerald-500/30 bg-emerald-500/5"
-                        : "border-slate-800 bg-slate-900/70 hover:border-cyan-500/30"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
+              return (
+                <button
+                  key={topic}
+                  type="button"
+                  onClick={() => toggleTopic(topic)}
+                  className={`rounded-2xl border p-5 text-left transition ${
+                    completed
+                      ? "border-emerald-500/30 bg-emerald-500/5"
+                      : "border-slate-800 bg-slate-900/70 hover:border-cyan-500/30"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
 
-                      <span
-                        className={`text-xs font-semibold ${
-                          completed
-                            ? "text-emerald-400"
-                            : "text-cyan-400"
-                        }`}
-                      >
-                        {String(
-                          index + 1
-                        ).padStart(2, "0")}
-                      </span>
+                    <span
+                      className={`text-xs font-semibold ${
+                        completed
+                          ? "text-emerald-400"
+                          : "text-cyan-400"
+                      }`}
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
 
-                      <span
-                        className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                          completed
-                            ? "bg-emerald-500/10 text-emerald-400"
-                            : "bg-slate-800 text-slate-500"
-                        }`}
-                      >
-                        {completed
-                          ? "Completed"
-                          : "Prepare"}
-                      </span>
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        completed
+                          ? "bg-emerald-500/10 text-emerald-400"
+                          : "bg-slate-800 text-slate-500"
+                      }`}
+                    >
+                      {completed ? "Completed" : "Prepare"}
+                    </span>
 
-                    </div>
+                  </div>
 
-                    <h3 className="mt-4 font-semibold text-white">
-                      {topic}
-                    </h3>
+                  <h3 className="mt-4 font-semibold text-white">
+                    {topic}
+                  </h3>
 
-                    <p className="mt-2 text-xs leading-5 text-slate-500">
-                      Revise the fundamentals,
-                      practice questions, and connect
-                      the topic to one of your projects.
-                    </p>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
+                    Revise the fundamentals, practice questions,
+                    and connect the topic to one of your projects.
+                  </p>
 
-                  </button>
-                );
-              }
-            )}
+                </button>
+              );
+            })}
 
           </div>
 
@@ -1820,248 +1845,217 @@ function PlacementPreparation() {
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold">
-              Test your preparation
+              Test Your Preparation
             </h2>
 
             <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
-              Answer career-specific questions,
-              submit your response, and review the
-              explanation immediately.
+              Answer career-specific questions, submit your response,
+              and review the explanation immediately.
             </p>
           </div>
 
           <Card className="mb-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+
               <div>
-                <p className="text-sm text-slate-400">Quiz summary</p>
-                <p className="mt-1 text-xl font-semibold text-white">
-                  {answeredQuestions} / {primaryPrep.questions.length} answered
+                <p className="text-sm text-slate-400">
+                  Quiz Summary
                 </p>
+
+                <p className="mt-1 text-xl font-semibold text-white">
+                  {answeredQuestions} / {totalQuestions} answered
+                </p>
+
                 <p className="mt-1 text-sm text-slate-400">
-                  Correct: {correctAnswers} · Incorrect: {answeredQuestions - correctAnswers} · Score: {answeredQuestions > 0 ? `${quizScore}%` : "Not scored yet"}
+                  Correct: {correctAnswers} · Incorrect: {incorrectAnswers}
+                  {" "}· Unanswered: {unansweredQuestions}
+                  {" "}· Score: {answeredQuestions > 0 ? `${quizScore}%` : "Not scored yet"}
                 </p>
               </div>
+
               <button
                 type="button"
                 onClick={resetQuiz}
-                disabled={answeredQuestions === 0 && Object.keys(selectedAnswers).length === 0}
+                disabled={
+                  answeredQuestions === 0 &&
+                  Object.keys(selectedAnswers).length === 0
+                }
                 className="rounded-xl border border-cyan-500/30 px-5 py-3 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/10 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Retake Quiz
               </button>
+
             </div>
           </Card>
 
           <div className="space-y-6">
 
-            {primaryPrep.questions.map(
-              (question, index) => {
-                const selected =
-                  selectedAnswers[
-                    question.question
-                  ];
+            {primaryPrep.questions.map((question, index) => {
+              const selected = selectedAnswers[question.question];
 
-                const submitted =
-                  submittedAnswers[
-                    question.question
-                  ];
+              const submitted = submittedAnswers[question.question];
 
-                const hasSubmitted =
-                  submitted !== undefined;
+              const hasSubmitted = submitted !== undefined;
 
-                return (
-                  <Card
-                    key={question.question}
-                  >
-                    <div className="flex items-start gap-4">
+              return (
+                <Card key={question.question}>
+                  <div className="flex items-start gap-4">
 
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-500/10 text-sm font-bold text-cyan-400">
-                        {index + 1}
-                      </span>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-cyan-500/10 text-sm font-bold text-cyan-400">
+                      {index + 1}
+                    </span>
 
-                      <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1">
 
-                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                          <p className="text-base font-semibold leading-7 text-white">
-                            {question.question}
-                          </p>
-                          <span
-                            className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                              question.difficulty === "Easy"
-                                ? "bg-emerald-500/10 text-emerald-400"
-                                : question.difficulty === "Medium"
-                                  ? "bg-amber-500/10 text-amber-300"
-                                  : "bg-rose-500/10 text-rose-300"
-                            }`}
-                          >
-                            {question.difficulty}
-                          </span>
-                        </div>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
 
-                        <div className="mt-5 space-y-3">
+                        <p className="text-base font-semibold leading-7 text-white">
+                          {question.question}
+                        </p>
 
-                          {question.options.map(
-                            (
-                              option,
-                              optionIndex
-                            ) => {
-                              const isSelected =
-                                selected ===
-                                optionIndex;
-
-                              const isCorrect =
-                                question.answer ===
-                                optionIndex;
-
-                              let optionClass =
-                                "border-slate-800 bg-slate-950 hover:border-cyan-500/40";
-
-                              if (
-                                hasSubmitted &&
-                                isCorrect
-                              ) {
-                                optionClass =
-                                  "border-emerald-500/40 bg-emerald-500/10";
-                              } else if (
-                                hasSubmitted &&
-                                isSelected &&
-                                !isCorrect
-                              ) {
-                                optionClass =
-                                  "border-red-500/40 bg-red-500/10";
-                              } else if (
-                                isSelected
-                              ) {
-                                optionClass =
-                                  "border-cyan-500/50 bg-cyan-500/10";
-                              }
-
-                              return (
-                                <button
-                                  key={option}
-                                  type="button"
-                                  disabled={
-                                    hasSubmitted
-                                  }
-                                  onClick={() =>
-                                    selectAnswer(
-                                      question.question,
-                                      optionIndex
-                                    )
-                                  }
-                                  className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${optionClass}`}
-                                >
-                                  <span
-                                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                                      isSelected
-                                        ? "bg-cyan-500 text-slate-950"
-                                        : "bg-slate-800 text-slate-400"
-                                    }`}
-                                  >
-                                    {String.fromCharCode(
-                                      65 +
-                                        optionIndex
-                                    )}
-                                  </span>
-
-                                  <span className="text-sm text-slate-300">
-                                    {option}
-                                  </span>
-                                </button>
-                              );
-                            }
-                          )}
-
-                        </div>
-
-                        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              submitAnswer(
-                                question
-                              )
-                            }
-                            disabled={
-                              selected ===
-                                undefined ||
-                              hasSubmitted
-                            }
-                            className="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-40"
-                          >
-                            Submit Answer
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              toggleQuestion(
-                                question.question
-                              )
-                            }
-                            className={`rounded-xl border px-5 py-3 text-sm font-medium transition ${
-                              questionProgress[
-                                question.question
-                              ]
-                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
-                                : "border-slate-700 text-slate-300 hover:bg-slate-800"
-                            }`}
-                          >
-                            {questionProgress[
-                              question.question
-                            ]
-                              ? "Practiced"
-                              : "Mark Practiced"}
-                          </button>
-
-                        </div>
-
-                        {hasSubmitted && (
-                          <div
-                            className={`mt-5 rounded-2xl border p-5 ${
-                              submitted
-                                ? "border-emerald-500/30 bg-emerald-500/5"
-                                : "border-red-500/30 bg-red-500/5"
-                            }`}
-                          >
-                            <p
-                              className={`text-sm font-semibold ${
-                                submitted
-                                  ? "text-emerald-400"
-                                  : "text-red-400"
-                              }`}
-                            >
-                              {submitted
-                                ? "Correct answer"
-                                : "Incorrect answer"}
-                            </p>
-
-                            <p className="mt-2 text-sm leading-6 text-slate-300">
-                              {question.explanation}
-                            </p>
-
-                            {!submitted && (
-                              <p className="mt-3 text-sm text-slate-400">
-                                Correct answer:{" "}
-                                <span className="font-semibold text-emerald-400">
-                                  {
-                                    question.options[
-                                      question.answer
-                                    ]
-                                  }
-                                </span>
-                              </p>
-                            )}
-                          </div>
-                        )}
+                        <span
+                          className={`w-fit shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                            question.difficulty === "Easy"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : question.difficulty === "Medium"
+                                ? "bg-amber-500/10 text-amber-300"
+                                : "bg-rose-500/10 text-rose-300"
+                          }`}
+                        >
+                          {question.difficulty}
+                        </span>
 
                       </div>
+
+                      <div className="mt-5 space-y-3">
+
+                        {question.options.map((option, optionIndex) => {
+                          const isSelected = selected === optionIndex;
+
+                          const isCorrect =
+                            question.answer === optionIndex;
+
+                          let optionClass =
+                            "border-slate-800 bg-slate-950 hover:border-cyan-500/40";
+
+                          if (hasSubmitted && isCorrect) {
+                            optionClass =
+                              "border-emerald-500/40 bg-emerald-500/10";
+                          } else if (
+                            hasSubmitted &&
+                            isSelected &&
+                            !isCorrect
+                          ) {
+                            optionClass =
+                              "border-red-500/40 bg-red-500/10";
+                          } else if (isSelected) {
+                            optionClass =
+                              "border-cyan-500/50 bg-cyan-500/10";
+                          }
+
+                          return (
+                            <button
+                              key={option}
+                              type="button"
+                              disabled={hasSubmitted}
+                              onClick={() =>
+                                selectAnswer(
+                                  question.question,
+                                  optionIndex
+                                )
+                              }
+                              className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${optionClass}`}
+                            >
+                              <span
+                                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                                  isSelected
+                                    ? "bg-cyan-500 text-slate-950"
+                                    : "bg-slate-800 text-slate-400"
+                                }`}
+                              >
+                                {String.fromCharCode(65 + optionIndex)}
+                              </span>
+
+                              <span className="text-sm text-slate-300">
+                                {option}
+                              </span>
+                            </button>
+                          );
+                        })}
+
+                      </div>
+
+                      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+
+                        <button
+                          type="button"
+                          onClick={() => submitAnswer(question)}
+                          disabled={
+                            selected === undefined || hasSubmitted
+                          }
+                          className="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Submit Answer
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            toggleQuestion(question.question)
+                          }
+                          className={`rounded-xl border px-5 py-3 text-sm font-medium transition ${
+                            questionProgress[question.question]
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                              : "border-slate-700 text-slate-300 hover:bg-slate-800"
+                          }`}
+                        >
+                          {questionProgress[question.question]
+                            ? "Practiced"
+                            : "Mark Practiced"}
+                        </button>
+
+                      </div>
+
+                      {hasSubmitted && (
+                        <div
+                          className={`mt-5 rounded-2xl border p-5 ${
+                            submitted
+                              ? "border-emerald-500/30 bg-emerald-500/5"
+                              : "border-red-500/30 bg-red-500/5"
+                          }`}
+                        >
+                          <p
+                            className={`text-sm font-semibold ${
+                              submitted
+                                ? "text-emerald-400"
+                                : "text-red-400"
+                            }`}
+                          >
+                            {submitted
+                              ? "Correct Answer"
+                              : "Incorrect Answer"}
+                          </p>
+
+                          <p className="mt-2 text-sm leading-6 text-slate-300">
+                            {question.explanation}
+                          </p>
+
+                          {!submitted && (
+                            <p className="mt-3 text-sm text-slate-400">
+                              Correct answer:{" "}
+                              <span className="font-semibold text-emerald-400">
+                                {question.options[question.answer]}
+                              </span>
+                            </p>
+                          )}
+                        </div>
+                      )}
+
                     </div>
-                  </Card>
-                );
-              }
-            )}
+                  </div>
+                </Card>
+              );
+            })}
 
           </div>
 
@@ -2077,42 +2071,37 @@ function PlacementPreparation() {
             </p>
 
             <h2 className="mt-2 text-2xl font-semibold">
-              Complete these foundations
+              Complete These Foundations
             </h2>
           </div>
 
           <div className="space-y-3">
 
-            {readinessItems.map(
-              (item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/60 p-5"
-                >
-                  <span className="text-sm text-slate-300">
-                    {item.label}
-                  </span>
+            {readinessItems.map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/60 p-5"
+              >
+                <span className="text-sm text-slate-300">
+                  {item.label}
+                </span>
 
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      item.completed
-                        ? "bg-emerald-500/10 text-emerald-400"
-                        : "bg-slate-800 text-slate-500"
-                    }`}
-                  >
-                    {item.completed
-                      ? "Ready"
-                      : "Not started"}
-                  </span>
-                </div>
-              )
-            )}
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                    item.completed
+                      ? "bg-emerald-500/10 text-emerald-400"
+                      : "bg-slate-800 text-slate-500"
+                  }`}
+                >
+                  {item.completed ? "Ready" : "Not Started"}
+                </span>
+              </div>
+            ))}
 
           </div>
 
           <p className="mt-4 text-sm text-slate-500">
-            {completedItems} of{" "}
-            {readinessItems.length} career
+            {completedItems} of {readinessItems.length} career
             foundations completed.
           </p>
 
@@ -2120,16 +2109,27 @@ function PlacementPreparation() {
 
         {/* RESET */}
 
-        <section className="rounded-xl border border-purple-200 bg-purple-50 px-5 py-3 font-semibold text-purple-700 shadow-sm transition hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-purple-300">
+        <section className="mt-8 flex flex-col gap-3 rounded-2xl border border-red-500/20 bg-red-500/5 p-5 sm:flex-row sm:items-center sm:justify-between">
+
+          <div>
+            <h3 className="font-semibold text-white">
+              Reset Practice Progress
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-400">
+              Clear your saved topics, practice history, and quiz answers
+              for this career.
+            </p>
+          </div>
+
           <button
             type="button"
             onClick={resetPracticeProgress}
-            className="text-sm text-slate-500 transition hover:text-red-400"
+            className="rounded-xl border border-red-500/30 px-5 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
           >
-            
-            Reset practice progress
-            
+            Reset Progress
           </button>
+
         </section>
 
         {/* NEXT ACTIONS */}
@@ -2141,25 +2141,20 @@ function PlacementPreparation() {
           </p>
 
           <h2 className="mt-2 text-2xl font-semibold">
-            Turn your analysis into preparation
+            Turn Your Analysis Into Preparation
           </h2>
 
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-            ResumeLens connects your resume,
-            career direction, skill gaps, company fit,
-            roadmap, and placement preparation into one
-            continuous journey.
+            ResumeLens connects your resume, career direction,
+            skill gaps, company fit, roadmap, and placement
+            preparation into one continuous journey.
           </p>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 
             <button
               type="button"
-              onClick={() =>
-                navigate(
-                  "/resume-improvement"
-                )
-              }
+              onClick={() => navigate("/resume-improvement")}
               className="rounded-xl border border-slate-700 px-5 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
             >
               Improve Resume
@@ -2167,9 +2162,7 @@ function PlacementPreparation() {
 
             <button
               type="button"
-              onClick={() =>
-                navigate("/skill-gap")
-              }
+              onClick={() => navigate("/skill-gap")}
               className="rounded-xl border border-slate-700 px-5 py-3 text-sm font-medium text-slate-300 transition hover:bg-slate-800"
             >
               Review Skill Gap
@@ -2177,11 +2170,7 @@ function PlacementPreparation() {
 
             <button
               type="button"
-              onClick={() =>
-                navigate(
-                  "/career-roadmap"
-                )
-              }
+              onClick={() => navigate("/career-roadmap")}
               className="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-400"
             >
               Open Career Roadmap

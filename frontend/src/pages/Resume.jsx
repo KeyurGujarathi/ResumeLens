@@ -1355,51 +1355,93 @@ function Resume() {
   return (
     <>
       <style>{`
-        @page {
-          size: A4;
-          margin: 12mm;
-        }
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
 
-        .resume-layout-single section {
-          margin-top: 0.55rem !important;
-        }
+  .resume-layout-single section {
+    margin-top: 0.55rem !important;
+  }
 
-        .resume-layout-single header {
-          padding-bottom: 0.55rem !important;
-        }
+  .resume-layout-single header {
+    padding-bottom: 0.55rem !important;
+  }
 
-        .resume-layout-single h1 {
-          font-size: 1.55rem !important;
-        }
+  .resume-layout-single h1 {
+    font-size: 1.55rem !important;
+  }
 
-        @media print {
-          body {
-            background: white !important;
-          }
+  @media print {
+    html,
+    body {
+      width: 210mm !important;
+      min-height: 0 !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: white !important;
+      overflow: visible !important;
+    }
 
-          body * {
-            visibility: hidden !important;
-          }
+    body * {
+      visibility: hidden !important;
+    }
 
-          .resume-print-preview,
-          .resume-print-preview * {
-            visibility: visible !important;
-          }
+    .resume-print-preview,
+    .resume-print-preview * {
+      visibility: visible !important;
+    }
 
-          .resume-print-preview {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: none !important;
-            max-height: none !important;
-            overflow: visible !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-          }
-        }
-      `}</style>
+    .resume-print-preview {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 190mm !important;
+      max-width: 190mm !important;
+      min-height: 0 !important;
+      height: auto !important;
+      max-height: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: visible !important;
+      box-shadow: none !important;
+      background: white !important;
+      color: #1e293b !important;
+      box-sizing: border-box !important;
+    }
+
+    .resume-print-preview section {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .resume-print-preview header {
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .resume-print-preview h2 {
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .resume-print-preview p,
+    .resume-print-preview li {
+      orphans: 2;
+      widows: 2;
+    }
+
+    .resume-print-preview ul {
+      padding-left: 4mm !important;
+    }
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+  }
+`}</style>
 
       <main className="min-h-screen bg-slate-950 px-6 py-10 text-white">
         <div className="mx-auto max-w-7xl">
